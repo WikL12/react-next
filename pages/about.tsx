@@ -1,11 +1,10 @@
 
-import Image from "next/image";
+import { GetStaticProps } from 'next'
 import { Button } from "@/components/ui/button"
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import "../app/globals.css";
-export default function About({name}:{name:any}) {
+export default function About({name}:PostProps) {
   const [names,setNames] = useState('')
   const router = useRouter()
   fetch('http://localhost:3000/api/getName').then(res=>res.json()).then(res=>{
@@ -22,12 +21,14 @@ export default function About({name}:{name:any}) {
     </div>
   );
 }
-
-export  async function getStaticProps(context:any): Promise<any>{
-  console.log("getStaticProps",context);
+interface PostProps {
+    name: string
+}
+export const getStaticProps: GetStaticProps<PostProps> = async (context) => {
+  console.log("getStaticProps", context);
   return {
     props: {
-      name:'form getStaticProps',
+      name: 'from getStaticProps',
     }
   }
 }
