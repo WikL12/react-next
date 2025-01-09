@@ -7,7 +7,7 @@ import "../app/globals.css";
 export default function About({name}:PostProps) {
   const [names,setNames] = useState('')
   const router = useRouter()
-  fetch('http://localhost:3000/api/getName').then(res=>res.json()).then(res=>{
+  fetch('/api/getName').then(res=>res.json()).then(res=>{
     console.log(res)
     setNames(res.result.name)
   })
