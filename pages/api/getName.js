@@ -11,4 +11,4 @@ function getFileData(){
   console.log(filePath);
   const fileData = readFileSync(filePath, 'utf8');
   return JSON.parse(fileData);
-}
+} 
