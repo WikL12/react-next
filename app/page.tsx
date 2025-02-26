@@ -11,13 +11,15 @@ export default function Home() {
       <div className="">this is a nextjs project</div>
       <Link href="/about" >
         <Button>Go to About</Button>
-        
       </Link>
       <Link href="/home" >
         <Button>Go to home</Button>
       </Link>
       <Link href="/langChain" >
         <Button>Go to langChain</Button>
+      </Link>
+      <Link href="/typingGame" >
+        <Button>Go to typingGame</Button>
       </Link>
     </div>
   );
