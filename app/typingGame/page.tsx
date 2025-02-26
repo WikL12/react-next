@@ -6,11 +6,8 @@ import { motion } from 'framer-motion'
 import { span } from 'framer-motion/client';
 import { useEngin } from './hooks';
 export default function page() {
-    const {state, words, updatedWords,timeLeft, startTimeLeft,resetTimeLeft,typed} = useEngin();
-    const restart = ()=>{
-        resetTimeLeft();
-        updatedWords();
-    }
+    const {state, words, updatedWords,timeLeft, startTimeLeft,resetTimeLeft,typed,clearTyped,restart,totalTyped,errors} = useEngin();
+    
     return (
         <div className="bg-slate-800 h-screen flex items-center justify-center flex-col font-mono text-4xl text-white">
             <CounterTimer time={timeLeft}></CounterTimer>
@@ -20,7 +17,11 @@ export default function page() {
             </div>
             <ResterButton restart={restart}></ResterButton>
             {
-                timeLeft === 0 && <Result errors={0} accuracypercentage={0} total={0}></Result>
+                timeLeft === 0 && <Result 
+                className="mt-10"
+                errors={errors}
+                accuracypercentage={10}
+                total={totalTyped.current}></Result>
             }
         </div>
     )
@@ -62,7 +63,7 @@ const ResterButton = ({ restart: restartFun }: restartProps) => {
 interface ResultProps {
     errors: number
     accuracypercentage: number
-    total: number,
+    total: any,
     className?: string
 }
 const Result = ({ errors, accuracypercentage, total, className }: ResultProps) => {

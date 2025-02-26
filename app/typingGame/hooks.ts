@@ -1,5 +1,3 @@
-
-"use client"
 export type State = 'start' | 'run' | 'end';
 import { useState, useRef, useEffect, useCallback } from "react";
 import { faker } from '@faker-js/faker'
@@ -7,48 +5,66 @@ export const useEngin = () => {
     const [state, setState] = useState<State>('start');
     //useWords
     const { words, updatedWords } = useWords(10);
-    const { timeLeft, startTimeLeft, resetTimeLeft } = useCountTimer(30);
-    const { typed, cursor, clearTyped, resetTotalTyped, totalTyped, } = useTyping(state);
-    // 当我们开始敲击时
-    useEffect(() => {
-        if(state === 'start'){
-            setState('run');
-            startTimeLeft();
-            }
-    },[state,startTimeLeft])
+    const [countDownSeconds,setCountDownSeconds] = useState<number>(15);
+    const { timeLeft, startTimeLeft, resetTimeLeft } = useCountTimer(10);
+    const { typed, cursor, clearTyped, resetTotalTyped, totalTyped, } = useTyping(state == 'end',countDownSeconds);
+    
+    const [errors,setErrors] = useState<number>(0);
 
-    const sumErrors = ()=>{
-        const wordsAllTyped = words.substring(0,Math.min(words.length,totalTyped.current));
-        const errors = countErrors(wordsAllTyped,typed);
-    }
-    const countErrors = (actrol:string,expected:string)=>{
-        const expectWrod = expected.split('');
-        expectWrod.reduce((errors,expectedChar,index)=>{
-            if(actrol[index] !== expectedChar){
-                return errors + 1;
-            }
-            return errors;
-        },0)
-    }
-    // 当计时结束时
+    const isStarting = state === 'start' && cursor > 0
+    const areWordsFinished = cursor == words.length;
+    const restart = useCallback(() => {
+        resetTimeLeft()
+        resetTotalTyped()
+        setState('start')
+        updatedWords()
+        clearTyped()
+        setErrors(0)
+    }, [clearTyped, resetTimeLeft, resetTotalTyped, updatedWords])
     useEffect(() => {
-        if(timeLeft <= 0 && state === 'run'){
+        if (isStarting && countDownSeconds > 0) {
+            setState('run')
+            startTimeLeft()
+        }
+    }, [isStarting, setCountDownSeconds, countDownSeconds])
+    const sumErrors = useCallback(() => {
+        const wordsReached = words.substring(0, Math.min(cursor, words.length))
+
+        setErrors(prevErrors => prevErrors + countErrors(typed, wordsReached))
+    }, [typed, words, cursor])
+     const countErrors = (actual: string, expected: string) => {
+        const expectedChars = expected.split("")
+      
+        return expectedChars.reduce((errors, expectedChar, i) => {
+          const actualChar = actual[i]
+          return errors + (actualChar === expectedChar ? 0 : 1)
+        }, 0)
+      }
+      
+       
+
+    useEffect(() => {
+        if (timeLeft === 0 && state == 'run') {
             setState('end')
-            // 计算错误率
-            sumErrors();
+            sumErrors()
+            setCountDownSeconds(0)
         }
-    },[timeLeft,state])
+    }, [timeLeft, state, sumErrors])
 
+    
 
-    // 当一组单词敲完，要产生一组新的单词
     useEffect(() => {
-        if(cursor == words.length){
-            updatedWords();
-            clearTyped();
+        if (areWordsFinished) {
+            updatedWords()
+            clearTyped()
+            sumErrors()
         }
-    },[])
+    }, [clearTyped, updatedWords, sumErrors, areWordsFinished])
+
+
+
     return {
-        state, words, updatedWords, timeLeft, startTimeLeft, resetTimeLeft, typed
+        state, words, updatedWords, timeLeft, startTimeLeft, resetTimeLeft, typed,clearTyped,restart,totalTyped,errors
     }
 }
 
@@ -56,43 +72,38 @@ export const useEngin = () => {
 export const useWords = (count: number) => {
     const wordss = faker.word.words(count);
     const [words, setWord] = useState<string>(wordss);
-    const updatedWords = () => {
+
+    const updatedWords = useCallback(() => {
         setWord(faker.word.words(count));
-    }
+    },[count])
     return { words, updatedWords }
 }
 
 export const useCountTimer = (initalTime: number) => {
     const [timeLeft, setTimeLeft] = useState<number>(initalTime);
-    let intervalRef:any  = null
-
+    const intervalRef = useRef<any>(null);
+    useEffect(()=>{
+        setTimeLeft(initalTime);
+    },[initalTime])
     const startTimeLeft = useCallback(
         () => {
-            if(intervalRef){
-                clearInterval(intervalRef)
+            if(intervalRef.current){
+                clearInterval(intervalRef.current)
             }
-            intervalRef = setInterval(() => {
+            intervalRef.current = setInterval(() => {
                 setTimeLeft((timeLeft) => timeLeft - 1);
             }, 1000)
-            console.log(intervalRef)
         },[initalTime]
     )
-    const resetTimeLeft = () => {
-        console.log(intervalRef);
-        if (intervalRef) {
-            clearInterval(intervalRef)
-        } 
-    }
+    const resetTimeLeft = useCallback(() => {
+        if (intervalRef.current) {
+            clearInterval(intervalRef.current)
+        };
+        setTimeLeft(initalTime);
+    },[initalTime])
     useEffect(() => {
-        if (!timeLeft) {
-            clearInterval(intervalRef)
-            alert(1)
-        }
-
-        return ()=>{
-            if (!timeLeft) {
-                clearInterval(intervalRef)
-            }
+        if (!timeLeft && intervalRef.current) {
+            clearInterval(intervalRef.current)
         }
     }, [
         timeLeft,intervalRef
@@ -103,7 +114,7 @@ export const useCountTimer = (initalTime: number) => {
 }
 
 
-export const useTyping = (state: string) => {
+export const useTyping = (isFinsed:boolean,countDownSeconds: number) => {
     const [typed, setTyped] = useState<string>('');
     const [cursor, setCursor] = useState<number>(0);
     const totalTyped = useRef<number>(0);
@@ -115,14 +126,12 @@ export const useTyping = (state: string) => {
         totalTyped.current = 0;
     }
     const keydownHandler = useCallback((e: KeyboardEvent) => {
-        console.log('keydown', e.key, e.code)
-        if (state == 'end') return;
-        console.log(e.key)
+        if (!countDownSeconds) return;
         if (e.key === 'Backspace') {
             setTyped((typed) => typed.slice(0, -1));
             setCursor((cursor) => cursor - 1);
             totalTyped.current -= 1;
-        } else if (e.key.startsWith('Key') || e.key.startsWith('Digit') || e.key.startsWith('Tab') || e.code == 'Space') {
+        } else if (e.key.startsWith('Key') || e.key.startsWith('Digit') || e.key.startsWith('Tab') ) {
             return
         } else {
             setTyped((typed) => typed + e.key);
@@ -130,7 +139,8 @@ export const useTyping = (state: string) => {
             totalTyped.current += 1;
 
         }
-    }, [])
+    }, [countDownSeconds])
+
     useEffect(() => {
         window.addEventListener('keydown', keydownHandler)
         return () => {
