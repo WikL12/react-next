@@ -16,6 +16,9 @@ export default function Home() {
       <Link href="/home" >
         <Button>Go to home</Button>
       </Link>
+      <Link href="/langChain" >
+        <Button>Go to langChain</Button>
+      </Link>
     </div>
   );
 }

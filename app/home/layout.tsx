@@ -1,12 +1,12 @@
 
 export default function homeLayout({
     children
-  }) {
+  }: {children: React.ReactNode}) {
     return (
         <div>
-            im head
+            im head 
           {children}
-
+          im footer
         </div>
     );
   }
