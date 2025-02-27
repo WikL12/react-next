@@ -2,14 +2,17 @@
 import '@ant-design/v5-patch-for-react-19';
 
 import { Input,Button } from "antd"
-import {useState} from "react"
+import {ChangeEvent, useState} from "react"
 export default function Page() {
     const [value,setValue] = useState<string>('');
     const [answer , setAnswer] = useState<string>('');
     type submits = ()=>void;
     const submit:submits = ()=>{
         // 调用api接口
-        let params = {
+        interface paramsProps{
+            message:string
+        }
+        let params:paramsProps = {
             message:value
         };
         setValue('');
@@ -32,7 +35,7 @@ export default function Page() {
                 }
             </div>
             <div className="w-4/5 h-1/5 flex justify-between items-center">
-                <Input size="large" type="text" value={value} onChange={(e)=>{setValue(e.target.value)}}></Input>
+                <Input size="large" type="text" value={value} onChange={(e:ChangeEvent<any>)=>{setValue(e.target.value)}}></Input>
                 <Button size="large" type="primary" onClick={submit}>发送</Button>
             </div>
          
