@@ -21,6 +21,9 @@ export default function Home() {
       <Link href="/typingGame" >
         <Button>Go to typingGame</Button>
       </Link>
+      <Link href="/deepseek" >
+        <Button>Go to deepseek</Button>
+      </Link>
     </div>
   );
 }

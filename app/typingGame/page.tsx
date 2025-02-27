@@ -6,14 +6,15 @@ import { motion } from 'framer-motion'
 import { span } from 'framer-motion/client';
 import { useEngin } from './hooks';
 export default function page() {
-    const {state, words, updatedWords,timeLeft, startTimeLeft,resetTimeLeft,typed,clearTyped,restart,totalTyped,errors} = useEngin();
+    const {state, words, updatedWords,timeLeft, startTimeLeft,resetTimeLeft,typed,clearTyped,restart,totalTyped,errors,goBack} = useEngin();
     
     return (
         <div className="bg-slate-800 h-screen flex items-center justify-center flex-col font-mono text-4xl text-white">
+            <BackButton goBack={goBack}></BackButton>
             <CounterTimer time={timeLeft}></CounterTimer>
-            <div className="relative w-full h-20">
-                <GenerRateWords words={words} className="absolute insert-0"></GenerRateWords>
-                <UserTypings userInput={typed} words={words} className="absolute insert-0"></UserTypings>
+            <div className="relative w-6/12 h-20">
+                <GenerRateWords words={words} className="absolute  w-full text-left break-all"></GenerRateWords>
+                <UserTypings userInput={typed} words={words} className="absolute w-full text-left break-all"></UserTypings>
             </div>
             <ResterButton restart={restart}></ResterButton>
             {
@@ -128,5 +129,13 @@ const Caret = ()=>{
         transition={{repeat:Infinity,duration:0.8,ease:'easeInOut'}}
         className="inline-block w-1 h-7 bg-amber-400">
         </motion.div>
+    )
+}
+interface backProps{
+    goBack: () => void
+}
+const BackButton = ({goBack}:backProps)=>{
+    return (
+        <Button onClick={goBack}>back</Button>
     )
 }

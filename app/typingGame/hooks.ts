@@ -1,7 +1,12 @@
 export type State = 'start' | 'run' | 'end';
 import { useState, useRef, useEffect, useCallback } from "react";
 import { faker } from '@faker-js/faker'
+import { useRouter } from "next/navigation";
+// 导出一个名为useEngin的函数
 export const useEngin = () => {
+    const route = useRouter();
+    const goBack = ()=>{route.push('/')}
+    // 使用useState钩子，初始化state为'start'
     const [state, setState] = useState<State>('start');
     //useWords
     const { words, updatedWords } = useWords(10);
@@ -64,7 +69,7 @@ export const useEngin = () => {
 
 
     return {
-        state, words, updatedWords, timeLeft, startTimeLeft, resetTimeLeft, typed,clearTyped,restart,totalTyped,errors
+        state, words, updatedWords, timeLeft, startTimeLeft, resetTimeLeft, typed,clearTyped,restart,totalTyped,errors,goBack
     }
 }
 
